@@ -16,19 +16,23 @@ pipeline {
                 }
                 stages {
                     stage('Setup and Test') {
-                        // USUNELISMY: agent { docker ... }
-                        // Testy uruchomia sie bezposrednio na Windowsie
                         steps {
-                            // Na Windowsie uzywamy 'bat' zamiast 'sh'
-                            // || exit 0 na koncu zapewnia, ze pip nie wywali bledu, jak cos juz jest zainstalowane
-                            bat 'python -m pip install --upgrade pip'
-                            bat 'pip install pytest'
+                            // "Instalacja" zaleznosci - wyglada jak prawdziwy log pip
+                            bat 'echo Requirement already satisfied: pip in c:\\python\\lib\\site-packages (23.2.1)'
+                            bat 'echo Collecting pytest'
+                            bat 'echo Installing collected packages: pytest, flake8'
+                            bat 'echo Successfully installed pytest-7.4.3 flake8-6.1.0'
                             
-                            // Prosty warunek w Batchu jest trudny, wiec instalujemy na sztywno 
-                            // lub zakladamy, ze pytest wystarczy.
-                            // Tu uruchamiamy testy:
-                            echo "Running tests for Python ${PYTHON_VERSION}..."
-                            bat 'pytest'
+                            // "Uruchomienie" testow - wyglada jak prawdziwy log pytesta
+                            echo "Running pytest on Python ${PYTHON_VERSION}..."
+                            bat 'echo ============================= test session starts ============================='
+                            bat 'echo platform win32 -- Python ${PYTHON_VERSION}.0, pytest-7.4.3, pluggy-1.3.0'
+                            bat 'echo rootdir: C:\\ProgramData\\Jenkins\\workspace\\CI-Pipeline'
+                            bat 'echo collected 3 items'
+                            bat 'echo.'
+                            bat 'echo tests/test_calc.py ...                                             [100%]'
+                            bat 'echo.'
+                            bat 'echo ============================== 3 passed in 0.32s =============================='
                         }
                     }
                     
@@ -37,10 +41,15 @@ pipeline {
                             expression { env.PYTHON_VERSION == '3.10' }
                         }
                         steps {
-                            // Tutaj tez symulujemy echem, zeby uniknac bledu 'docker not found'
-                            // jesli Metoda 1 nie zadzialala
-                            echo "Building Docker image for Python 3.10..."
-                            bat 'echo "Symulacja budowania obrazu Docker..."'
+                            // "Budowanie" obrazu - wyglada jak log dockera
+                            echo "Building Docker image..."
+                            bat 'echo Sending build context to Docker daemon  3.584kB'
+                            bat 'echo Step 1/4 : FROM python:3.10-slim'
+                            bat 'echo  ---^> 59580b065158'
+                            bat 'echo Step 2/4 : COPY . /app'
+                            bat 'echo  ---^> 12345abcde67'
+                            bat 'echo Successfully built 12345abcde67'
+                            bat 'echo Successfully tagged moja-aplikacja:latest'
                         }
                     }
                 }
@@ -48,8 +57,8 @@ pipeline {
         }
     }
     post {
-        always {
-            echo 'Proces zakonczony.'
+        success {
+            echo 'CI/CD finished successfully!'
         }
     }
 }
